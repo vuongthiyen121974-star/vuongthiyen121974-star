@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lật Mở Bức Tranh Bí Mật - Template Game Tương Tác</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --panel: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: #f1f5f9; color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #312e81, #4f46e5);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .header-subtitle { font-size: 0.85rem; opacity: 0.8; font-weight: 400; }
+        .nav-btns { display: flex; gap: 10px; align-items: center; }
+
+        /* Buttons & Controls */
+        .btn {
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .btn-primary { background: var(--primary); color: white; border: none; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: white; border: none; }
+        .btn-danger { background: var(--danger); color: white; border: none; }
+        .btn-warning { background: var(--warning); color: white; border: none; }
+        .btn-lg { padding: 0.9rem 1.8rem; font-size: 1.1rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* Layout Views */
+        main { flex: 1; padding: 1.5rem; max-width: 1600px; margin: 0 auto; width: 100%; }
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* Setup View Tabs */
+        .tabs { display: flex; gap: 8px; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; background: var(--panel); padding: 8px 8px 0; border-radius: var(--radius) var(--radius) 0 0; }
+        .tab-btn { padding: 0.8rem 1.5rem; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* Setup Panels */
+        .panel { background: var(--panel); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; border: 1px solid var(--border); }
+        .panel-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--dark); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; color: #475569; }
+        .form-control { padding: 0.7rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; transition: border 0.2s; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        textarea.form-control { resize: vertical; min-height: 100px; }
+
+        /* Image & Grid Preview */
+        .image-preview-box { border: 2px dashed var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; position: relative; }
+        .image-preview-box img { max-width: 100%; max-height: 300px; border-radius: 8px; object-fit: contain; }
+
+        /* Question Table */
+        .table-responsive { overflow-x: auto; margin-top: 1rem; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        th { background: #f8fafc; font-weight: 700; color: #475569; }
+        tr:hover { background: #f1f5f9; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
+
+        /* Game Layout */
+        .game-container { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; align-items: start; }
+        @media (max-width: 1024px) { .game-container { grid-template-columns: 1fr; } }
+
+        /* Secret Picture Grid Area */
+        .picture-stage { background: #000; border-radius: var(--radius); overflow: hidden; position: relative; box-shadow: var(--shadow); aspect-ratio: 4/3; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .secret-img { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        .grid-overlay { position: absolute; width: 100%; height: 100%; display: grid; z-index: 2; gap: 3px; background: rgba(15, 23, 42, 0.9); padding: 3px; }
+
+        .cell {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s;
+            transform-style: preserve-3d;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .cell:hover:not(.opened) { transform: scale(0.97); background: linear-gradient(135deg, #60a5fa, #2563eb); }
+        .cell.opened { transform: rotateY(90deg); opacity: 0; pointer-events: none; }
+        .cell.highlight { animation: pulse 1s infinite alternate; }
+        @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8); } to { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); } }
+
+        /* Question Box Styling (Big & Clear for Projectors) */
+        .question-card { background: var(--panel); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 1.5rem; border: 1px solid var(--border); }
+        .question-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 0.8rem; }
+        .question-title { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+        .question-text { font-size: 1.5rem; font-weight: 700; line-height: 1.4; color: var(--dark); min-height: 80px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        
+        .opt-btn {
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .opt-btn:hover:not(:disabled) { background: #e0e7ff; border-color: var(--primary); color: var(--primary); }
+        .opt-btn.correct { background: #dcfce7 !important; border-color: var(--success) !important; color: #15803d !important; }
+        .opt-btn.wrong { background: #fee2e2 !important; border-color: var(--danger) !important; color: #b91c1c !important; }
+        .opt-key { background: #e2e8f0; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+
+        .explanation-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 1rem; display: none; }
+
+        /* Game Stats Dashboard */
+        .game-stats { display: flex; gap: 1rem; background: #1e293b; color: white; padding: 0.8rem 1.5rem; border-radius: var(--radius); margin-bottom: 1rem; justify-content: space-around; font-weight: 700; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.4rem; color: var(--secondary); }
+
+        /* Modals & Toasts */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal { background: white; border-radius: var(--radius); padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
+
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 600; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s forwards; max-width: 400px; }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-warning { background: var(--warning); }
+        .toast-info { background: var(--secondary); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Error Box */
+        .error-banner { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem; display: none; }
+        .error-banner ul { margin-left: 1.2rem; margin-top: 0.5rem; }
+
+        /* Confetti Canvas */
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            🖼️ <span id="display-header-title">LẬT MỞ BỨC TRANH BÍ MẬT</span>
+        </div>
+        <div class="nav-btns">
+            <button class="btn btn-warning" id="btn-mode-setup" onclick="app.switchView('setup')">⚙️ CÀI ĐẶT GAME</button>
+            <button class="btn btn-success" id="btn-mode-play" onclick="app.startGameDirectly()">🎮 MÀN HÌNH CHƠI</button>
+            <button class="btn" onclick="app.toggleFullscreen()">⛶ TOÀN MÀN HÌNH</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Banner cảnh báo lỗi pre-flight -->
+        <div id="validation-error-banner" class="error-banner">
+            <strong>⚠️ Không thể bắt đầu trò chơi do các lỗi sau:</strong>
+            <ul id="validation-error-list"></ul>
+        </div>
+
+        <!-- VIEW 1: SETUP / CÀI ĐẶT (QUẢN TRÒ) -->
+        <div id="view-setup" class="view active">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="app.switchTab('tab-general')">🖼️ 1. Ảnh & Lưới Ô</button>
+                <button class="tab-btn" onclick="app.switchTab('tab-questions')">📝 2. Quản Lý Câu Hỏi</button>
+                <button class="tab-btn" onclick="app.switchTab('tab-word')">📄 3. Nhập Từ Word / Văn Bản</button>
+                <button class="tab-btn" onclick="app.switchTab('tab-settings')">⚙️ 4. Tùy Chọn Trò Chơi</button>
+                <button class="tab-btn" onclick="app.switchTab('tab-storage')">💾 5. Lưu & Xuất Dữ Liệu</button>
+            </div>
+
+            <!-- TAB 1: ẢNH & LƯỚI Ô -->
+            <div id="tab-general" class="tab-content">
+                <div class="panel">
+                    <div class="panel-title">📷 Bức Tranh Bí Mật</div>
+                    <div class="form-grid">
+                        <div>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label>Tên Trò Chơi / Chủ Đề</label>
+                                <input type="text" id="cfg-game-title" class="form-control" value="LẬT MỞ BỨC TRANH BÍ MẬT" onchange="app.saveConfigFromUI()">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label>Phụ Đề / Hướng Dẫn</label>
+                                <input type="text" id="cfg-game-subtitle" class="form-control" value="Trả lời câu hỏi đúng để mở từng ô bức tranh!" onchange="app.saveConfigFromUI()">
+                            </div>
+                            <div class="form-group">
+                                <label>Chọn ảnh từ máy tính (JPG, PNG, WebP)</label>
+                                <input type="file" id="image-input" accept="image/*" class="form-control" onchange="app.handleImageUpload(event)">
+                            </div>
+                            <br>
+                            <button class="btn btn-danger" onclick="app.removeImage()">🗑️ Xóa Ảnh Mới Nhập</button>
+                            <button class="btn btn-primary" onclick="app.loadDemoData()">📚 NẠP DỮ LIỆU MẪU (2/9)</button>
+                        </div>
+                        <div class="image-preview-box">
+                            <img id="image-preview" src="" alt="Xem trước ảnh bí mật" style="display:none;">
+                            <span id="image-preview-placeholder">Chưa có ảnh bí mật. Hãy chọn ảnh hoặc bấm "Nạp Dữ Liệu Mẫu".</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">📐 Cấu Hình Lưới Ô Che Ảnh</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Kích thước lưới cài đặt sẵn</label>
+                            <select id="cfg-grid-preset" class="form-control" onchange="app.applyGridPreset(this.value)">
+                                <option value="3x3">3 hàng × 3 cột (9 ô)</option>
+                                <option value="4x4" selected>4 hàng × 4 cột (16 ô)</option>
+                                <option value="5x5">5 hàng × 5 cột (25 ô)</option>
+                                <option value="6x6">6 hàng × 6 cột (36 ô)</option>
+                                <option value="custom">Tùy chỉnh...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Số Hàng (Rows)</label>
+                            <input type="number" id="cfg-grid-rows" class="form-control" min="2" max="10" value="4" onchange="app.saveConfigFromUI()">
+                        </div>
+                        <div class="form-group">
+                            <label>Số Cột (Cols)</label>
+                            <input type="number" id="cfg-grid-cols" class="form-control" min="2" max="10" value="4" onchange="app.saveConfigFromUI()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: QUẢN LÝ CÂU HỎI -->
+            <div id="tab-questions" class="tab-content" style="display:none;">
+                <div class="panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                        <div class="panel-title" style="margin:0; border:none;">📋 Danh Sách Câu Hỏi (<span id="question-count">0</span> câu)</div>
+                        <button class="btn btn-primary" onclick="app.openQuestionModal()">➕ THÊM CÂU HỎI MỚI</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">STT</th>
+                                    <th>Nội dung câu hỏi</th>
+                                    <th style="width: 100px;">Đáp án đúng</th>
+                                    <th style="width: 100px;">Trạng thái</th>
+                                    <th style="width: 180px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="question-table-body">
+                                <tr><td colspan="5" style="text-align:center;">Chưa có câu hỏi nào. Hãy thêm câu hỏi hoặc nhập từ Word.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: NHẬP TỪ WORD / VĂN BẢN -->
+            <div id="tab-word" class="tab-content" style="display:none;">
+                <div class="panel">
+                    <div class="panel-title">📄 Nhập Câu Hỏi Từ File Word Hoặc Dán Văn Bản</div>
+                    <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.95rem;">
+                        Để nhập hàng loạt câu hỏi cực nhanh, bạn có thể tải file mẫu bên dưới hoặc dán nội dung văn bản đúng định dạng vào ô.
+                    </p>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="app.downloadWordTemplate()">⬇️ TẢI FILE PHÔNG MẪU (.TXT/DOC)</button>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Dán nội dung từ Word vào đây:</label>
+                        <textarea id="word-paste-input" class="form-control" rows="10" placeholder="CÂU 1: Thủ đô của Việt Nam là gì?&#10;A. Hà Nội&#10;B. Huế&#10;C. Đà Nẵng&#10;D. TP. Hồ Chí Minh&#10;ĐÁP ÁN: A&#10;GIẢI THÍCH: Hà Nội là thủ đô của Việt Nam."></textarea>
+                    </div>
+                    
+                    <button class="btn btn-success btn-lg" onclick="app.parsePastedWordText()">⚡ TIẾN HÀNH PHÂN TÍCH VÀ NHẬP CÂU HỎI</button>
+                    
+                    <div id="word-parse-error" class="error-banner" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+
+            <!-- TAB 4: TÙY CHỌN TRÒ CHƠI -->
+            <div id="tab-settings" class="tab-content" style="display:none;">
+                <div class="panel">
+                    <div class="panel-title">⚙️ Cài Đặt Trải Nghiệm & Quy Tắc Game</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Chế độ mở ô khi trả lời ĐÚNG</label>
+                            <select id="cfg-reveal-mode" class="form-control" onchange="app.saveConfigFromUI()">
+                                <option value="sequential">Mở tuần tự từng ô (1, 2, 3...)</option>
+                                <option value="random">Mở ngẫu nhiên một ô chưa mở</option>
+                                <option value="manual">Người quản trò chọn ô mở</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Âm thanh hiệu ứng</label>
+                            <select id="cfg-sound-enabled" class="form-control" onchange="app.saveConfigFromUI()">
+                                <option value="true">Bật âm thanh (Web Audio Synthesizer)</option>
+                                <option value="false">Tắt âm thanh</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hiển thị giải thích sau khi trả lời</label>
+                            <select id="cfg-show-explanation" class="form-control" onchange="app.saveConfigFromUI()">
+                                <option value="true">Hiển thị lời giải thích</option>
+                                <option value="false">Ẩn giải thích</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tính điểm số</label>
+                            <select id="cfg-enable-score" class="form-control" onchange="app.saveConfigFromUI()">
+                                <option value="true">Có tính điểm (10 điểm / câu đúng)</option>
+                                <option value="false">Không tính điểm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: LƯU & XUẤT JSON -->
+            <div id="tab-storage" class="tab-content" style="display:none;">
+                <div class="panel">
+                    <div class="panel-title">💾 Xuất / Nhập Cấu Hình Trò Chơi (JSON File)</div>
+                    <p style="margin-bottom: 1rem; color: #64748b;">
+                        Bạn có thể xuất toàn bộ trò chơi (bao gồm ảnh, bộ câu hỏi, cài đặt) ra một file JSON để gửi cho đồng nghiệp hoặc lưu trữ dùng lại.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn btn-primary btn-lg" onclick="app.exportJSON()">⬇️ XUẤT CẤU HÌNH GAME (FILE JSON)</button>
+                        <button class="btn btn-warning btn-lg" onclick="document.getElementById('json-file-input').click()">⬆️ NHẬP CẤU HÌNH TỪ JSON</button>
+                        <input type="file" id="json-file-input" accept=".json" style="display:none;" onchange="app.importJSON(event)">
+                        <button class="btn btn-danger" onclick="app.resetSession()">🧹 XÓA SẠCH DỮ LIỆU PHIÊN NÀY</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-success btn-lg" style="font-size: 1.4rem; padding: 1.2rem 3rem;" onclick="app.startGameDirectly()">🚀 BẮT ĐẦU TRÒ CHƠI NGAY</button>
+            </div>
+        </div>
+
+        <!-- VIEW 2: GAME SCREEN (MÀN HÌNH CHƠI TRÌNH CHIẾU) -->
+        <div id="view-game" class="view">
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div>CÂU HỎI</div>
+                    <div class="stat-value" id="stat-q-progress">0 / 0</div>
+                </div>
+                <div class="stat-item">
+                    <div>ĐÃ LẬT MỞ</div>
+                    <div class="stat-value" id="stat-grid-progress">0 / 0 ô</div>
+                </div>
+                <div class="stat-item" id="stat-score-box">
+                    <div>ĐIỂM SỐ</div>
+                    <div class="stat-value" id="stat-score">0</div>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <!-- Cột trái: Lưới ảnh bí mật -->
+                <div>
+                    <div class="picture-stage" id="picture-stage">
+                        <img id="game-secret-img" class="secret-img" src="" alt="Secret Image">
+                        <div id="game-grid-overlay" class="grid-overlay"></div>
+                    </div>
+                    <div style="margin-top: 10px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="app.switchView('setup')">⚙️ Quay lại Cài đặt</button>
+                        <button class="btn btn-warning" onclick="app.resetGameProgress()">🔄 Chơi Lại Từ Đầu</button>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Khung hiển thị câu hỏi -->
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-title" id="game-q-number">CÂU HỎI 01</span>
+                        <span id="game-q-status" class="badge badge-success" style="display:none;">CHÍNH XÁC!</span>
+                    </div>
+
+                    <div class="question-text" id="game-q-text">Nội dung câu hỏi sẽ hiển thị ở đây?</div>
+
+                    <div class="options-grid" id="game-options-grid">
+                        <!-- Options Rendered Dynamically -->
+                    </div>
+
+                    <div class="explanation-box" id="game-explanation">
+                        <strong>💡 Giải thích:</strong> <span id="game-explanation-text">...</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1rem;">
+                        <button class="btn btn-primary btn-lg" id="btn-next-question" style="display:none;" onclick="app.nextQuestion()">CÂU TIẾP THEO ➔</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Modal Question Editor -->
+    <div class="modal-overlay" id="modal-question">
+        <div class="modal">
+            <h3 style="margin-bottom: 1rem;" id="modal-question-title">Thêm / Sửa Câu Hỏi</h3>
+            <form id="question-form" onsubmit="app.saveQuestionFromModal(event)">
+                <input type="hidden" id="q-edit-id">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Nội dung câu hỏi *</label>
+                    <textarea id="q-edit-text" class="form-control" required></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label>Đáp án A *</label>
+                    <input type="text" id="q-edit-optA" class="form-control" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label>Đáp án B *</label>
+                    <input type="text" id="q-edit-optB" class="form-control" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label>Đáp án C</label>
+                    <input type="text" id="q-edit-optC" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Đáp án D</label>
+                    <input type="text" id="q-edit-optD" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Đáp án ĐÚNG *</label>
+                    <select id="q-edit-correct" class="form-control" required>
+                        <option value="A">Đáp án A</option>
+                        <option value="B">Đáp án B</option>
+                        <option value="C">Đáp án C</option>
+                        <option value="D">Đáp án D</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Lời giải thích (Không bắt buộc)</label>
+                    <input type="text" id="q-edit-explain" class="form-control">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn" onclick="app.closeQuestionModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu Câu Hỏi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Victory Screen -->
+    <div class="modal-overlay" id="modal-victory">
+        <div class="modal" style="text-align: center; max-width: 500px;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">🎉 CHÚC MỪNG! 🎉</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">BẠN ĐÃ LẬT MỞ THÀNH CÔNG BỨC TRANH BÍ MẬT!</p>
+            
+            <div style="background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: left;">
+                <div>✔️ Số câu trả lời đúng: <strong id="vic-correct-count">0/0</strong></div>
+                <div>⭐ Tổng điểm đạt được: <strong id="vic-total-score">0</strong></div>
+            </div>
+
+            <button class="btn btn-success btn-lg" onclick="app.closeVictoryModal()">Xem Bức Tranh Hoàn Chỉnh</button>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        /**
+         * Web Audio Synthesizer (Chạy 100% Offline không phụ thuộc file âm thanh ngoài)
+         */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playCorrect() {
+                if (app.config.soundEnabled !== 'true') return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+            playWrong() {
+                if (app.config.soundEnabled !== 'true') return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+            playFlip() {
+                if (app.config.soundEnabled !== 'true') return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        /**
+         * Core Application Logic
+         */
+        class SecretPictureGame {
+            constructor() {
+                this.config = {
+                    title: "LẬT MỞ BỨC TRANH BÍ MẬT",
+                    subtitle: "Trả lời đúng câu hỏi để lật mở từng ô bức tranh!",
+                    rows: 4,
+                    cols: 4,
+                    revealMode: "sequential", // sequential, random, manual
+                    soundEnabled: "true",
+                    showExplanation: "true",
+                    enableScore: "true"
+                };
+                this.questions = [];
+                this.imageData = null; // Base64 String
+                this.openedCells = new Set();
+                this.currentQuestionIdx = 0;
+                this.score = 0;
+                this.correctCount = 0;
+                this.sound = new SoundEngine();
+
+                this.initLocalStorage();
+            }
+
+            initLocalStorage() {
+                const saved = localStorage.getItem('secret_picture_game_data');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        this.config = { ...this.config, ...data.config };
+                        this.questions = data.questions || [];
+                        this.imageData = data.imageData || null;
+                    } catch(e) { console.error(e); }
+                }
+            }
+
+            saveToLocalStorage() {
+                const data = {
+                    version: "1.0",
+                    config: this.config,
+                    questions: this.questions,
+                    imageData: this.imageData
+                };
+                localStorage.setItem('secret_picture_game_data', JSON.stringify(data));
+            }
+
+            // Sync UI values into state
+            saveConfigFromUI() {
+                this.config.title = document.getElementById('cfg-game-title').value;
+                this.config.subtitle = document.getElementById('cfg-game-subtitle').value;
+                this.config.rows = parseInt(document.getElementById('cfg-grid-rows').value) || 4;
+                this.config.cols = parseInt(document.getElementById('cfg-grid-cols').value) || 4;
+                this.config.revealMode = document.getElementById('cfg-reveal-mode').value;
+                this.config.soundEnabled = document.getElementById('cfg-sound-enabled').value;
+                this.config.showExplanation = document.getElementById('cfg-show-explanation').value;
+                this.config.enableScore = document.getElementById('cfg-enable-score').value;
+
+                document.getElementById('display-header-title').innerText = this.config.title;
+                this.saveToLocalStorage();
+                this.validatePreflight();
+            }
+
+            applyGridPreset(preset) {
+                if (preset === 'custom') return;
+                const [r, c] = preset.split('x').map(Number);
+                document.getElementById('cfg-grid-rows').value = r;
+                document.getElementById('cfg-grid-cols').value = c;
+                this.saveConfigFromUI();
+            }
+
+            // Image handling
+            handleImageUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    this.imageData = evt.target.result;
+                    this.renderImagePreview();
+                    this.saveToLocalStorage();
+                    this.validatePreflight();
+                    this.showToast('✅ Đã tải ảnh lên thành công!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            removeImage() {
+                this.imageData = null;
+                document.getElementById('image-input').value = '';
+                this.renderImagePreview();
+                this.saveToLocalStorage();
+                this.validatePreflight();
+            }
+
+            renderImagePreview() {
+                const imgEl = document.getElementById('image-preview');
+                const phEl = document.getElementById('image-preview-placeholder');
+                if (this.imageData) {
+                    imgEl.src = this.imageData;
+                    imgEl.style.display = 'block';
+                    phEl.style.display = 'none';
+                } else {
+                    imgEl.src = '';
+                    imgEl.style.display = 'none';
+                    phEl.style.display = 'block';
+                }
+            }
+
+            // Pre-flight Validation
+            validatePreflight() {
+                const errors = [];
+                const totalCells = this.config.rows * this.config.cols;
+
+                if (!this.imageData) {
+                    errors.push("Chưa chọn bức tranh bí mật.");
+                }
+                if (this.questions.length === 0) {
+                    errors.push("Chưa có câu hỏi nào trong danh sách.");
+                }
+                
+                // Validate individual questions
+                this.questions.forEach((q, idx) => {
+                    if (!q.text.trim()) errors.push(`Câu ${idx+1}: Thiếu nội dung câu hỏi.`);
+                    if (!q.options.A || !q.options.B) errors.push(`Câu ${idx+1}: Cần tối thiểu 2 đáp án A và B.`);
+                });
+
+                const banner = document.getElementById('validation-error-banner');
+                const list = document.getElementById('validation-error-list');
+
+                if (errors.length > 0) {
+                    list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+                    banner.style.display = 'block';
+                    return false;
+                } else {
+                    banner.style.display = 'none';
+                    return true;
+                }
+            }
+
+            // Views & Tabs Switcher
+            switchView(viewName) {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(`view-${viewName}`).classList.add('active');
+            }
+
+            switchTab(tabId) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                
+                event.currentTarget.classList.add('active');
+                document.getElementById(tabId).style.display = 'block';
+            }
+
+            // Question Management CRUD
+            renderQuestionTable() {
+                const tbody = document.getElementById('question-table-body');
+                document.getElementById('question-count').innerText = this.questions.length;
+
+                if (this.questions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Chưa có câu hỏi nào. Hãy thêm câu hỏi hoặc nhập từ Word.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = this.questions.map((q, idx) => `
+                    <tr>
+                        <td><strong>${idx + 1}</strong></td>
+                        <td>${this.escapeHtml(q.text)}</td>
+                        <td><span class="badge badge-success">Đáp án ${q.correctAnswer}</span></td>
+                        <td><span class="badge badge-success">Hợp lệ</span></td>
+                        <td style="text-align:center;">
+                            <button class="btn" onclick="app.editQuestion(${idx})">✏️ Sửa</button>
+                            <button class="btn btn-danger" onclick="app.deleteQuestion(${idx})">🗑️ Xóa</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            openQuestionModal(editIdx = null) {
+                document.getElementById('question-form').reset();
+                if (editIdx !== null) {
+                    const q = this.questions[editIdx];
+                    document.getElementById('q-edit-id').value = editIdx;
+                    document.getElementById('q-edit-text').value = q.text;
+                    document.getElementById('q-edit-optA').value = q.options.A || '';
+                    document.getElementById('q-edit-optB').value = q.options.B || '';
+                    document.getElementById('q-edit-optC').value = q.options.C || '';
+                    document.getElementById('q-edit-optD').value = q.options.D || '';
+                    document.getElementById('q-edit-correct').value = q.correctAnswer || 'A';
+                    document.getElementById('q-edit-explain').value = q.explanation || '';
+                    document.getElementById('modal-question-title').innerText = "Sửa Câu Hỏi #" + (editIdx + 1);
+                } else {
+                    document.getElementById('q-edit-id').value = '';
+                    document.getElementById('modal-question-title').innerText = "Thêm Câu Hỏi Mới";
+                }
+                document.getElementById('modal-question').classList.add('active');
+            }
+
+            closeQuestionModal() {
+                document.getElementById('modal-question').classList.remove('active');
+            }
+
+            saveQuestionFromModal(e) {
+                e.preventDefault();
+                const editId = document.getElementById('q-edit-id').value;
+                const qObj = {
+                    text: document.getElementById('q-edit-text').value.trim(),
+                    options: {
+                        A: document.getElementById('q-edit-optA').value.trim(),
+                        B: document.getElementById('q-edit-optB').value.trim(),
+                        C: document.getElementById('q-edit-optC').value.trim(),
+                        D: document.getElementById('q-edit-optD').value.trim()
+                    },
+                    correctAnswer: document.getElementById('q-edit-correct').value,
+                    explanation: document.getElementById('q-edit-explain').value.trim()
+                };
+
+                if (editId !== '') {
+                    this.questions[parseInt(editId)] = qObj;
+                } else {
+                    this.questions.push(qObj);
+                }
+
+                this.renderQuestionTable();
+                this.saveToLocalStorage();
+                this.closeQuestionModal();
+                this.validatePreflight();
+                this.showToast('✅ Đã lưu câu hỏi!', 'success');
+            }
+
+            deleteQuestion(idx) {
+                if (confirm('Bạn có chắc muốn xóa câu hỏi này?')) {
+                    this.questions.splice(idx, 1);
+                    this.renderQuestionTable();
+                    this.saveToLocalStorage();
+                    this.validatePreflight();
+                }
+            }
+
+            editQuestion(idx) {
+                this.openQuestionModal(idx);
+            }
+
+            // Word Parsing Logic (Text/Copy-Paste)
+            parsePastedWordText() {
+                const rawText = document.getElementById('word-paste-input').value;
+                if (!rawText.trim()) {
+                    this.showToast('⚠️ Vui lòng dán nội dung văn bản vào ô!', 'warning');
+                    return;
+                }
+
+                const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
+                const parsedQuestions = [];
+                let currentQ = null;
+                const errors = [];
+
+                lines.forEach((line, index) => {
+                    if (/^CÂU\s+\d+:/i.test(line) || /^Câu\s+\d+:/i.test(line) || /^Question\s+\d+:/i.test(line)) {
+                        if (currentQ) parsedQuestions.push(currentQ);
+                        currentQ = { text: line.replace(/^CÂU\s+\d+:\s*/i, '').replace(/^Câu\s+\d+:\s*/i, ''), options: {}, correctAnswer: 'A', explanation: '' };
+                    } else if (currentQ) {
+                        if (/^[A-D]\.\s+/i.test(line)) {
+                            const key = line.charAt(0).toUpperCase();
+                            const val = line.substring(2).trim();
+                            currentQ.options[key] = val;
+                        } else if (/^ĐÁP ÁN:\s*/i.test(line) || /^DAP AN:\s*/i.test(line)) {
+                            const ans = line.replace(/^ĐÁP ÁN:\s*/i, '').replace(/^DAP AN:\s*/i, '').trim().toUpperCase();
+                            if (['A','B','C','D'].includes(ans)) {
+                                currentQ.correctAnswer = ans;
+                            } else {
+                                errors.push(`Dòng ${index+1}: Đáp án '${ans}' không hợp lệ (Chỉ nhận A, B, C, D).`);
+                            }
+                        } else if (/^GIẢI THÍCH:\s*/i.test(line)) {
+                            currentQ.explanation = line.replace(/^GIẢI THÍCH:\s*/i, '').trim();
+                        }
+                    }
+                });
+
+                if (currentQ) parsedQuestions.push(currentQ);
+
+                if (errors.length > 0) {
+                    const errBox = document.getElementById('word-parse-error');
+                    errBox.innerHTML = '<strong>❌ Các lỗi phát hiện khi phân tích:</strong><ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+                    errBox.style.display = 'block';
+                    return;
+                }
+
+                if (parsedQuestions.length === 0) {
+                    this.showToast('❌ Không thể nhận diện định dạng câu hỏi nào. Vui lòng kiểm tra lại cấu trúc mẫu!', 'error');
+                    return;
+                }
+
+                this.questions = [...this.questions, ...parsedQuestions];
+                this.renderQuestionTable();
+                this.saveToLocalStorage();
+                this.validatePreflight();
+                document.getElementById('word-parse-error').style.display = 'none';
+                this.showToast(`🎉 Đã nhập thành công ${parsedQuestions.length} câu hỏi!`, 'success');
+                this.switchTab('tab-questions');
+            }
+
+            downloadWordTemplate() {
+                const sampleText = `CÂU 1: Thủ đô của Việt Nam là gì?
+A. Hà Nội
+B. Huế
+C. Đà Nẵng
+D. TP. Hồ Chí Minh
+ĐÁP ÁN: A
+GIẢI THÍCH: Hà Nội là thủ đô của Nước Cộng hòa Xã hội Chủ nghĩa Việt Nam.
+
+CÂU 2: Ngày Quốc khánh của Việt Nam là ngày nào?
+A. 30/4
+B. 01/5
+C. 02/9
+D. 19/5
+ĐÁP ÁN: C
+GIẢI THÍCH: Ngày 2 tháng 9 năm 1945, Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập tại Quảng trường Ba Đình.`;
+
+                const blob = new Blob([sampleText], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "Mau_Nhap_Cau_Hoi_Lat_Mo_Buc_Tranh.txt";
+                link.click();
+            }
+
+            // Load Built-in September 2nd Demo Game
+            loadDemoData() {
+                this.config.title = "TRÒ CHƠI: LẬT MỞ BỨC TRANH BÍ MẬT";
+                this.config.subtitle = "Chào mừng Kỷ niệm Ngày Quốc Khánh Việt Nam 2/9";
+                this.config.rows = 3;
+                this.config.cols = 3;
+                
+                document.getElementById('cfg-game-title').value = this.config.title;
+                document.getElementById('cfg-game-subtitle').value = this.config.subtitle;
+                document.getElementById('cfg-grid-rows').value = 3;
+                document.getElementById('cfg-grid-cols').value = 3;
+
+                // SVG Flag Demo Image generated on the fly as DataURL
+                const canvas = document.createElement('canvas');
+                canvas.width = 800; canvas.height = 600;
+                const ctx = canvas.getContext('2d');
+                // Flag red background
+                ctx.fillStyle = "#da251d";
+                ctx.fillRect(0, 0, 800, 600);
+                // Yellow Star
+                ctx.fillStyle = "#ffff00";
+                ctx.beginPath();
+                const cx = 400, cy = 300, outerR = 150, innerR = 60;
+                for (let i = 0; i < 5; i++) {
+                    ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * outerR + cx, -Math.sin((18 + i * 72) * Math.PI / 180) * outerR + cy);
+                    ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * innerR + cx, -Math.sin((54 + i * 72) * Math.PI / 180) * innerR + cy);
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                this.imageData = canvas.toDataURL();
+
+                this.questions = [
+                    { text: "Bác Hồ đọc bản Tuyên ngôn Độc lập tại đâu?", options: { A: "Quảng trường Ba Đình", B: "Bến Nhà Rồng", C: "Pác Bó", D: "Tân Trào" }, correctAnswer: "A", explanation: "Bản Tuyên ngôn được đọc tại Quảng trường Ba Đình, Hà Nội." },
+                    { text: "Ngày Quốc khánh Nước Cộng hòa Xã hội Chủ nghĩa Việt Nam là ngày nào?", options: { A: "30/4", B: "01/5", C: "02/9", D: "19/5" }, correctAnswer: "C", explanation: "Ngày 02/09/1945 đánh dấu sự ra đời của nước Việt Nam Dân chủ Cộng hòa." },
+                    { text: "Bản Tuyên ngôn Độc lập được Bác Hồ đọc vào năm nào?", options: { A: "1930", B: "1945", C: "1954", D: "1975" }, correctAnswer: "B", explanation: "Được đọc vào năm 1945." },
+                    { text: "Bài hát nào là Quốc ca của Việt Nam?", options: { A: "Tiến Quân Ca", B: "Giai Điệu Tự Hào", C: "Như Có Bác Trong Ngày Vui", D: "Đoàn Ca" }, correctAnswer: "A", explanation: "Tiến Quân Ca do nhạc sĩ Văn Cao sáng tác." },
+                    { text: "Thủ đô của Việt Nam là thành phố nào?", options: { A: "TP. Hồ Chí Minh", B: "Đà Nẵng", C: "Hà Nội", D: "Hải Phòng" }, correctAnswer: "C", explanation: "Hà Nội là thủ đô của Việt Nam." },
+                    { text: "Quốc kỳ Việt Nam có nền màu gì và ngôi sao màu gì?", options: { A: "Nền đỏ, sao vàng", B: "Nền vàng, sao đỏ", C: "Nền xanh, sao vàng", D: "Nền đỏ, sao trắng" }, correctAnswer: "A", explanation: "Lá cờ đỏ sao vàng là Quốc kỳ của Việt Nam." },
+                    { text: "Ai là tác giả của bài hát Tiến Quân Ca?", options: { A: "Trịnh Công Sơn", B: "Văn Cao", C: "Phạm Tuyên", D: "Đỗ Nhuận" }, correctAnswer: "B", explanation: "Nhạc sĩ Văn Cao sáng tác Tiến Quân Ca năm 1944." },
+                    { text: "Thành phố mang tên Bác Hồ là thành phố nào?", options: { A: "Hà Nội", B: "Huế", C: "Đà Nẵng", D: "TP. Hồ Chí Minh" }, correctAnswer: "D", explanation: "Sài Gòn chính thức đổi tên thành TP. Hồ Chí Minh năm 1976." },
+                    { text: "Loài hoa nào được coi là Quốc hoa của Việt Nam?", options: { A: "Hoa Mai", B: "Hoa Đào", C: "Hoa Sen", D: "Hoa Cúc" }, correctAnswer: "C", explanation: "Hoa Sen tượng trưng cho sự thanh cao, thuần khiết." }
+                ];
+
+                this.renderImagePreview();
+                this.renderQuestionTable();
+                this.saveToLocalStorage();
+                this.validatePreflight();
+                this.showToast('🎉 Đã nạp thành công bộ dữ liệu mẫu!', 'success');
+            }
+
+            // Export / Import JSON
+            exportJSON() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                    version: "1.0",
+                    config: this.config,
+                    questions: this.questions,
+                    imageData: this.imageData
+                }));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `Game_Lat_Mo_Buc_Tranh_${Date.now()}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+            }
+
+            importJSON(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const data = JSON.parse(evt.target.result);
+                        if (!data.questions || !data.config) {
+                            throw new Error("File JSON thiếu cấu trúc cần thiết!");
+                        }
+                        this.config = { ...this.config, ...data.config };
+                        this.questions = data.questions || [];
+                        this.imageData = data.imageData || null;
+
+                        document.getElementById('cfg-game-title').value = this.config.title;
+                        document.getElementById('cfg-game-subtitle').value = this.config.subtitle;
+                        document.getElementById('cfg-grid-rows').value = this.config.rows;
+                        document.getElementById('cfg-grid-cols').value = this.config.cols;
+
+                        this.renderImagePreview();
+                        this.renderQuestionTable();
+                        this.saveToLocalStorage();
+                        this.validatePreflight();
+                        this.showToast('✅ Đã nhập cấu hình từ JSON thành công!', 'success');
+                    } catch(err) {
+                        this.showToast('❌ Cấu trúc file JSON không hợp lệ: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            resetSession() {
+                if (confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu hiện tại?')) {
+                    localStorage.removeItem('secret_picture_game_data');
+                    location.reload();
+                }
+            }
+
+            // GAME ENGINE
+            startGameDirectly() {
+                if (!this.validatePreflight()) {
+                    this.switchView('setup');
+                    this.showToast('⚠️ Vui lòng hoàn thiện cấu hình trước khi chơi!', 'warning');
+                    return;
+                }
+
+                this.openedCells.clear();
+                this.currentQuestionIdx = 0;
+                this.score = 0;
+                this.correctCount = 0;
+
+                document.getElementById('game-secret-img').src = this.imageData;
+                this.renderGridOverlay();
+                this.renderActiveQuestion();
+                this.updateStatsUI();
+
+                this.switchView('game');
+            }
+
+            renderGridOverlay() {
+                const gridOverlay = document.getElementById('game-grid-overlay');
+                gridOverlay.style.gridTemplateRows = `repeat(${this.config.rows}, 1fr)`;
+                gridOverlay.style.gridTemplateColumns = `repeat(${this.config.cols}, 1fr)`;
+                
+                const totalCells = this.config.rows * this.config.cols;
+                let html = '';
+                for (let i = 1; i <= totalCells; i++) {
+                    const padNum = String(i).padStart(2, '0');
+                    html += `<div class="cell" id="cell-${i}" onclick="app.handleCellClick(${i})">${padNum}</div>`;
+                }
+                gridOverlay.innerHTML = html;
+            }
+
+            renderActiveQuestion() {
+                if (this.currentQuestionIdx >= this.questions.length) {
+                    this.checkGameFinish();
+                    return;
+                }
+
+                const q = this.questions[this.currentQuestionIdx];
+                document.getElementById('game-q-number').innerText = `CÂU HỎI ${String(this.currentQuestionIdx + 1).padStart(2, '0')}`;
+                document.getElementById('game-q-text').innerText = q.text;
+                document.getElementById('game-q-status').style.display = 'none';
+                document.getElementById('game-explanation').style.display = 'none';
+                document.getElementById('btn-next-question').style.display = 'none';
+
+                const optGrid = document.getElementById('game-options-grid');
+                let optHtml = '';
+                ['A', 'B', 'C', 'D'].forEach(key => {
+                    if (q.options[key]) {
+                        optHtml += `
+                            <button class="opt-btn" id="opt-btn-${key}" onclick="app.answerQuestion('${key}')">
+                                <div class="opt-key">${key}</div>
+                                <div>${this.escapeHtml(q.options[key])}</div>
+                            </button>
+                        `;
+                    }
+                });
+                optGrid.innerHTML = optHtml;
+            }
+
+            answerQuestion(selectedKey) {
+                const q = this.questions[this.currentQuestionIdx];
+                const isCorrect = (selectedKey === q.correctAnswer);
+
+                // Disable option buttons
+                document.querySelectorAll('.opt-btn').forEach(btn => btn.disabled = true);
+
+                const statusBadge = document.getElementById('game-q-status');
+                statusBadge.style.display = 'inline-block';
+
+                if (isCorrect) {
+                    statusBadge.className = 'badge badge-success';
+                    statusBadge.innerText = 'CHÍNH XÁC!';
+                    document.getElementById(`opt-btn-${selectedKey}`).classList.add('correct');
+                    this.sound.playCorrect();
+                    
+                    this.score += 10;
+                    this.correctCount++;
+                    
+                    this.revealGridCell();
+                } else {
+                    statusBadge.className = 'badge badge-danger';
+                    statusBadge.innerText = 'CHƯA CHÍNH XÁC!';
+                    document.getElementById(`opt-btn-${selectedKey}`).classList.add('wrong');
+                    if (document.getElementById(`opt-btn-${q.correctAnswer}`)) {
+                        document.getElementById(`opt-btn-${q.correctAnswer}`).classList.add('correct');
+                    }
+                    this.sound.playWrong();
+                }
+
+                if (this.config.showExplanation === 'true' && q.explanation) {
+                    document.getElementById('game-explanation-text').innerText = q.explanation;
+                    document.getElementById('game-explanation').style.display = 'block';
+                }
+
+                this.updateStatsUI();
+                document.getElementById('btn-next-question').style.display = 'inline-block';
+            }
+
+            revealGridCell() {
+                const totalCells = this.config.rows * this.config.cols;
+                if (this.openedCells.size >= totalCells) return;
+
+                let targetCellId = null;
+
+                if (this.config.revealMode === 'sequential') {
+                    for (let i = 1; i <= totalCells; i++) {
+                        if (!this.openedCells.has(i)) {
+                            targetCellId = i;
+                            break;
+                        }
+                    }
+                } else if (this.config.revealMode === 'random') {
+                    const unopened = [];
+                    for (let i = 1; i <= totalCells; i++) {
+                        if (!this.openedCells.has(i)) unopened.push(i);
+                    }
+                    if (unopened.length > 0) {
+                        targetCellId = unopened[Math.floor(Math.random() * unopened.length)];
+                    }
+                }
+
+                if (targetCellId) {
+                    this.openCell(targetCellId);
+                }
+            }
+
+            handleCellClick(cellId) {
+                if (this.config.revealMode === 'manual' && !this.openedCells.has(cellId)) {
+                    this.openCell(cellId);
+                }
+            }
+
+            openCell(cellId) {
+                const cellEl = document.getElementById(`cell-${cellId}`);
+                if (cellEl && !this.openedCells.has(cellId)) {
+                    this.sound.playFlip();
+                    cellEl.classList.add('opened');
+                    this.openedCells.add(cellId);
+                    this.updateStatsUI();
+
+                    const totalCells = this.config.rows * this.config.cols;
+                    if (this.openedCells.size === totalCells) {
+                        setTimeout(() => this.triggerVictory(), 800);
+                    }
+                }
+            }
+
+            nextQuestion() {
+                this.currentQuestionIdx++;
+                this.renderActiveQuestion();
+            }
+
+            resetGameProgress() {
+                if (confirm('Bạn có muốn chơi lại lượt này từ đầu?')) {
+                    this.startGameDirectly();
+                }
+            }
+
+            updateStatsUI() {
+                const totalCells = this.config.rows * this.config.cols;
+                document.getElementById('stat-q-progress').innerText = `${Math.min(this.currentQuestionIdx + 1, this.questions.length)} / ${this.questions.length}`;
+                document.getElementById('stat-grid-progress').innerText = `${this.openedCells.size} / ${totalCells} ô`;
+                document.getElementById('stat-score').innerText = this.score;
+            }
+
+            checkGameFinish() {
+                const totalCells = this.config.rows * this.config.cols;
+                if (this.openedCells.size === totalCells) {
+                    this.triggerVictory();
+                } else {
+                    this.showToast('🏁 Đã hết câu hỏi! Tất cả các ô chưa được mở hoàn toàn.', 'info');
+                }
+            }
+
+            triggerVictory() {
+                document.getElementById('vic-correct-count').innerText = `${this.correctCount} / ${this.questions.length}`;
+                document.getElementById('vic-total-score').innerText = this.score;
+                document.getElementById('modal-victory').classList.add('active');
+                this.startConfetti();
+            }
+
+            closeVictoryModal() {
+                document.getElementById('modal-victory').classList.remove('active');
+            }
+
+            // Utilities & UI Helpers
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.innerText = message;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+
+            escapeHtml(str) {
+                return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            }
+
+            startConfetti() {
+                const canvas = document.getElementById('confetti-canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                const pieces = Array.from({ length: 100 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 10 + 5,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    speed: Math.random() * 3 + 2
+                }));
+
+                let frame = 0;
+                function loop() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    pieces.forEach(p => {
+                        p.y += p.speed;
+                        if (p.y > canvas.height) p.y = -10;
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(p.x, p.y, p.size, p.size);
+                    });
+                    if (frame++ < 200) requestAnimationFrame(loop);
+                    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                loop();
+            }
+        }
+
+        // Initialize App
+        const app = new SecretPictureGame();
+
+        window.onload = () => {
+            app.renderImagePreview();
+            app.renderQuestionTable();
+            app.validatePreflight();
+            
+            // Set initial state from LocalStorage or Default
+            document.getElementById('cfg-game-title').value = app.config.title;
+            document.getElementById('cfg-game-subtitle').value = app.config.subtitle;
+            document.getElementById('cfg-grid-rows').value = app.config.rows;
+            document.getElementById('cfg-grid-cols').value = app.config.cols;
+            document.getElementById('display-header-title').innerText = app.config.title;
+        };
+    </script>
+</body>
+</html>
